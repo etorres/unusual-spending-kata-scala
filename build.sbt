@@ -1,15 +1,17 @@
 organization := "es.eriktorr.katas"
-name := "unusual-spending-scala"
-version := "0.1"
+name := "unusual-spending-kata-scala"
+version := "1.0"
 
 scalaVersion := "2.13.1"
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.1.1" % Test
+  "org.scalatest" %% "scalatest" % "3.1.1" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.14.3" % Test
 )
 
 scalacOptions ++= Seq(
-  "-encoding", "utf8",
+  "-encoding",
+  "utf8",
   "-Xfatal-warnings",
   "-Xlint",
   "-deprecation",
@@ -26,5 +28,6 @@ jacocoReportSettings := JacocoReportSettings().withThresholds(
     branch = 100,
     complexity = 100,
     line = 90,
-    clazz = 100)
+    clazz = 100
+  )
 )

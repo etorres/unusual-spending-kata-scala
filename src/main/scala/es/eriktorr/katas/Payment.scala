@@ -1,3 +1,3 @@
 package es.eriktorr.katas
 
-case class Payment(price: Double, description: String, category: Category)
+final case class Payment(price: Double, description: String, category: Category)
