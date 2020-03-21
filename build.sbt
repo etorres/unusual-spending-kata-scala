@@ -20,6 +20,9 @@ scalacOptions ++= Seq(
 
 wartremoverErrors ++= Warts.unsafe
 wartremoverWarnings ++= Warts.unsafe
+wartremoverExcluded ++= PathFinder(baseDirectory.value / "src" / "test" / "scala")
+  .**("*Spec.scala")
+  .get
 
 jacocoReportSettings := JacocoReportSettings().withThresholds(
   JacocoThresholds(

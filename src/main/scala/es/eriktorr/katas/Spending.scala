@@ -1,7 +1,3 @@
 package es.eriktorr.katas
 
-import java.time.Month
-
-final class Spending {
-  def spendingFor(userId: String, month: Month): Unit = ???
-}
+final case class Spending(amount: Double, category: Category)

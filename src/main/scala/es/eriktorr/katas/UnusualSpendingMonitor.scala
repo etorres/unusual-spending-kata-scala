@@ -1,5 +1,9 @@
 package es.eriktorr.katas
 
-final class UnusualSpendingMonitor {
-  def triggerAlertOnUnusualSpending(userId: String): Unit = ???
+final class UnusualSpendingMonitor(
+  clock: Clock,
+  paymentsFetcher: PaymentsFetcher,
+  alertSender: AlertSender
+) {
+  def triggerAlertFor(user: User): Unit = ???
 }
