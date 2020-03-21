@@ -2,11 +2,11 @@ package es.eriktorr.katas
 
 class AlertSenderSpec extends UnitSpec {
   "Alert sender" should "create a list of formatted spending statements" in new SilentAlertSender() {
-    formattedItemFrom(Seq(Spending(148.0, Groceries))) shouldBe "* You spent $148 on groceries"
+    formattedItemFrom(Map(Groceries -> 148.0)) shouldBe "* You spent $148 on groceries"
   }
 
   "Alert sender" should "create a formatted alert message" in new SilentAlertSender() {
-    formattedAlertFrom(Seq(Spending(148.0, Groceries), Spending(928.0, Travel))) shouldBe Alert(
+    formattedAlertFrom(Map(Groceries -> 148.0, Travel -> 928.0)) shouldBe Alert(
       "Unusual spending of $1076 detected!",
       """
         |Hello card user!
@@ -24,6 +24,6 @@ class AlertSenderSpec extends UnitSpec {
   }
 
   abstract class SilentAlertSender extends AlertSender {
-    override def alert(user: User, spending: Seq[Spending]): Unit = {}
+    override def alert(user: User, spending: Map[Category, Double]): Unit = {}
   }
 }

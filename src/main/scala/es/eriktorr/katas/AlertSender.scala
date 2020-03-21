@@ -1,9 +1,9 @@
 package es.eriktorr.katas
 
 trait AlertSender {
-  def alert(user: User, spending: Seq[Spending]): Unit
+  def alert(user: User, spending: Map[Category, Double]): Unit
 
-  final def formattedAlertFrom(spending: Seq[Spending]): Alert = Alert(
+  final def formattedAlertFrom(spending: Map[Category, Double]): Alert = Alert(
     s"Unusual spending of $$${totalAmountFrom(spending)} detected!",
     s"""
        |Hello card user!
@@ -18,11 +18,13 @@ trait AlertSender {
        |""".stripMargin
   )
 
-  final def totalAmountFrom(spending: Seq[Spending]): String = rounded(spending.map(_.amount).sum)
+  final def totalAmountFrom(spending: Map[Category, Double]): String = rounded(spending.values.sum)
 
-  final def formattedItemFrom(spending: Seq[Spending]): String =
+  final def formattedItemFrom(spending: Map[Category, Double]): String =
     spending
-      .map(s => s"* You spent $$${rounded(s.amount)} on ${s.category.displayName}")
+      .map {
+        case (category, amount) => s"* You spent $$${rounded(amount)} on ${category.displayName}"
+      }
       .mkString("\n")
 
   final def rounded(amount: Double): String = f"$amount%1.0f"

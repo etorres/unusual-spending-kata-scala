@@ -10,9 +10,6 @@ import scala.collection.mutable.ArrayBuffer
 
 trait DataGeneratorsSpec {
   val user1: User = User("user_1")
-  val user2: User = User("user_2")
-
-  val userGen: Gen[User] = Gen.oneOf(user1, user2)
 
   val march16th2020: LocalDate = LocalDate.of(2020, 8, 16)
 
@@ -37,18 +34,7 @@ trait DataGeneratorsSpec {
       override def builder: mutable.Builder[T, ArrayBuffer[T]] = ArrayBuffer.newBuilder[T]
     }
 
-  val paymentsGen: Gen[mutable.ArrayBuffer[Payment]] =
-    Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGen)
-
-  val paymentsSeqGen: Gen[Seq[Payment]] = for {
-    payments <- paymentsGen
+  val paymentsGen: Gen[Seq[Payment]] = for {
+    payments <- Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGen)
   } yield payments.toSeq
-
-  val userPaymentsGen: Gen[Map[User, Seq[Payment]]] =
-    Gen.mapOf(Gen.zip(userGen, paymentsSeqGen))
-
-  val spendingGen: Gen[(User, Map[User, Seq[Payment]])] = for {
-    targetUser <- userGen
-    userPayments <- userPaymentsGen
-  } yield (targetUser, userPayments)
 }
