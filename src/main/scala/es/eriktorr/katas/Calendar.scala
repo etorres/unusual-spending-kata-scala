@@ -2,6 +2,6 @@ package es.eriktorr.katas
 
 import java.time.LocalDate
 
-trait Clock {
+trait Calendar {
   def today(): LocalDate = LocalDate.now()
 }

@@ -1,7 +1,7 @@
 package es.eriktorr.katas
 
 class AlertSenderSpec extends UnitSpec {
-  "Alert sender" should "create a list of formatted spending" in new SilentAlertSender() {
+  "Alert sender" should "create a list of formatted spending statements" in new SilentAlertSender() {
     formattedItemFrom(Seq(Spending(148.0, Groceries))) shouldBe "* You spent $148 on groceries"
   }
 

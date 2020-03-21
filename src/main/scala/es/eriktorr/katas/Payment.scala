@@ -1,3 +1,5 @@
 package es.eriktorr.katas
 
-final case class Payment(price: Double, description: String, category: Category)
+import java.time.LocalDate
+
+final case class Payment(date: LocalDate, price: Double, description: String, category: Category)

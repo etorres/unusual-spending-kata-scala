@@ -4,26 +4,26 @@ import java.time.LocalDate
 
 import org.scalacheck._
 
-object UnusualSpendingMonitorSpec extends Properties("UnusualSpendingMonitorSpec") {
+object UnusualSpendingMonitorSpec
+    extends Properties("UnusualSpendingMonitorSpec")
+    with DataGeneratorsSpec {
   import Prop.forAll
 
-  private val March16th2020 = LocalDate.of(2020, 3, 16)
-  private val TargetUser = User("user_123")
+  property("triggerAlertOnUnusuallyHighSpending") = forAll(spendingGen) {
+    case (targetUser, userPayments) =>
+      val unusualSpendingMonitor =
+        new UnusualSpendingMonitor(
+          new FixedCalendar(march16th2020),
+          new InMemoryPaymentsFetcher(userPayments),
+          new MemoryAlertSender()
+        )
 
-  property("triggerAlertOnUnusuallyHighSpending") = forAll { input: Int =>
-    val unusualSpendingMonitor =
-      new UnusualSpendingMonitor(
-        new FixedClock(March16th2020),
-        new InMemoryPaymentsFetcher(Map.empty),
-        new MemoryAlertSender()
-      )
+      unusualSpendingMonitor.triggerAlertFor(targetUser)
 
-    unusualSpendingMonitor.triggerAlertFor(TargetUser)
-
-    true
+      true
   }
 
-  final class FixedClock(fixedDate: LocalDate) extends Clock {
+  final class FixedCalendar(fixedDate: LocalDate) extends Calendar {
     override def today(): LocalDate = fixedDate
   }
 
@@ -36,9 +36,9 @@ object UnusualSpendingMonitorSpec extends Properties("UnusualSpendingMonitorSpec
   }
 
   final class MemoryAlertSender extends AlertSender {
-    private[this] var alert: Alert = Alert("__undef__", "__undef__")
+    private[this] var alert: Option[Alert] = None
 
     override def alert(user: User, spending: Seq[Spending]): Unit =
-      alert = formattedAlertFrom(spending)
+      alert = Some(formattedAlertFrom(spending))
   }
 }
