@@ -12,12 +12,12 @@ trait DataGeneratorsSpec {
   val sparingUser: User = User("sparing_user")
   val wastefulUser: User = User("wasteful_user")
 
-  val march16th2020: LocalDate = LocalDate.of(2020, 8, 16)
-  val firstDayOfThePeriod: LocalDate = march16th2020.minusMonths(1L)
+  val august31st2019: LocalDate = LocalDate.of(2019, 8, 31)
+  val firstDayOfThePeriod: LocalDate = august31st2019.minusMonths(1L)
 
   val dateGen: Gen[LocalDate] = {
-    val rangeStart = march16th2020.minusMonths(2L).toEpochDay
-    val rangeEnd = march16th2020.toEpochDay
+    val rangeStart = august31st2019.minusMonths(2L).toEpochDay
+    val rangeEnd = august31st2019.toEpochDay
     Gen
       .choose(rangeStart, rangeEnd)
       .map(i => LocalDate.ofEpochDay(i))
@@ -35,7 +35,7 @@ trait DataGeneratorsSpec {
     for {
       date <- dateGen
       price <- priceGen(user, date)
-      description <- Gen.asciiPrintableStr
+      description <- Gen.alphaStr
       category <- Gen.oneOf(Entertainment, Restaurants, Golf, Groceries, Travel)
     } yield Payment(date = date, price = price, description = description, category = category)
 
@@ -44,12 +44,11 @@ trait DataGeneratorsSpec {
       override def builder: mutable.Builder[T, ArrayBuffer[T]] = ArrayBuffer.newBuilder[T]
     }
 
-  val paymentsGen: (Boolean, Gen[Payment]) => Gen[Seq[Payment]] = (allowEmpty, paymentGenerator) =>
+  val paymentsGen: Gen[Payment] => Gen[Seq[Payment]] = paymentGenerator =>
     for {
-      payments <- if (allowEmpty) Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
-      else Gen.nonEmptyContainerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
+      payments <- Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
     } yield payments.toSeq
 
-  val sparingPaymentsGen: Gen[Seq[Payment]] = paymentsGen(true, paymentGen(sparingUser))
-  val wastefulPaymentsGen: Gen[Seq[Payment]] = paymentsGen(false, paymentGen(wastefulUser))
+  val sparingPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(sparingUser))
+  val wastefulPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(wastefulUser))
 }

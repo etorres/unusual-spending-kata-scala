@@ -8,9 +8,10 @@ object UnusualSpendingMonitorSpec
     extends Properties("UnusualSpendingMonitorSpec")
     with DataGeneratorsSpec {
   import Prop.forAll
+  import Prop.propBoolean
 
   property("triggerAlertOnUnusuallyHighSpending") = forAll(wastefulPaymentsGen) { payments =>
-    triggeredAlertFor(wastefulUser, payments).nonEmpty
+    payments.nonEmpty ==> triggeredAlertFor(wastefulUser, payments).nonEmpty
   }
 
   property("dontTriggerAlertOnNormalSpending") = forAll(sparingPaymentsGen) { payments =>
@@ -22,7 +23,7 @@ object UnusualSpendingMonitorSpec
 
     val unusualSpendingMonitor =
       new UnusualSpendingMonitor(
-        new FixedCalendar(march16th2020),
+        new FixedCalendar(august31st2019),
         new InMemoryPaymentsFetcher(payments),
         alertSender
       )
