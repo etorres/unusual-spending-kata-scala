@@ -21,9 +21,11 @@ final class UnusualSpendingMonitor(
       )
     }
 
+    val inlineMe = paymentsFetcher // TODO
+      .paymentsFor(user, twoMonthsAgo, today)
+
     val spendingByCategory =
-      paymentsFetcher
-        .paymentsFor(user, twoMonthsAgo, today)
+      inlineMe
         .groupBy(_.category)
         .map {
           case (category, payments) => (category, monthlySpendingFrom(payments))
@@ -35,7 +37,10 @@ final class UnusualSpendingMonitor(
         .map { case (category, (_, currentMonthSpending)) => (category, currentMonthSpending) }
 
     // TODO
-    println("\n\n >> HERE: " + spendingByCategory.toString() + "\n")
+    println(
+      "\n\n >> HERE: payments=" + inlineMe.toString() + "\n spending=" + spendingByCategory
+        .toString() + "\n"
+    )
     // TODO
 
     if (spendingByCategory.nonEmpty) alertSender.alert(user, spendingByCategory)

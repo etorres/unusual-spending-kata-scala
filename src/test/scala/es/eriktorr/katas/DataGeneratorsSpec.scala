@@ -44,11 +44,12 @@ trait DataGeneratorsSpec {
       override def builder: mutable.Builder[T, ArrayBuffer[T]] = ArrayBuffer.newBuilder[T]
     }
 
-  val paymentsGen: Gen[Payment] => Gen[Seq[Payment]] = paymentGenerator =>
+  val paymentsGen: (Boolean, Gen[Payment]) => Gen[Seq[Payment]] = (allowEmpty, paymentGenerator) =>
     for {
-      payments <- Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
+      payments <- if (allowEmpty) Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
+      else Gen.nonEmptyContainerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
     } yield payments.toSeq
 
-  val sparingPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(sparingUser))
-  val wastefulPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(wastefulUser))
+  val sparingPaymentsGen: Gen[Seq[Payment]] = paymentsGen(true, paymentGen(sparingUser))
+  val wastefulPaymentsGen: Gen[Seq[Payment]] = paymentsGen(false, paymentGen(wastefulUser))
 }
