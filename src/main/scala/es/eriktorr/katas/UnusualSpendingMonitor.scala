@@ -10,10 +10,10 @@ final class UnusualSpendingMonitor(
     val oneMonthAgo = today.minusMonths(1L)
     val twoMonthsAgo = today.minusMonths(2L)
 
-    def monthlyExpenses(payments: Seq[Payment]): (Double, Double) = {
+    def monthlySpendingFrom(payments: Seq[Payment]): (Double, Double) = {
       val paymentsByMonth =
         payments.groupBy(_.date.isBefore(oneMonthAgo)).map {
-          case (m, ps) => (m, ps.map(_.price).sum)
+          case (isItFromLastMonth, ps) => (isItFromLastMonth, ps.map(_.price).sum)
         }
       (
         paymentsByMonth.getOrElse(true, 0L),
@@ -21,16 +21,23 @@ final class UnusualSpendingMonitor(
       )
     }
 
-    val paymentsByCategory =
+    val spendingByCategory =
       paymentsFetcher
         .paymentsFor(user, twoMonthsAgo, today)
         .groupBy(_.category)
         .map {
-          case (category, payments) => (category, monthlyExpenses(payments))
+          case (category, payments) => (category, monthlySpendingFrom(payments))
         }
-        .filter { case (_, (pastPayments, currentPayments)) => currentPayments > pastPayments }
-        .map { case (category, (_, currentPayments)) => (category, currentPayments) }
+        .filter {
+          case (_, (pastMonthSpending, currentMonthSpending)) =>
+            currentMonthSpending > pastMonthSpending
+        }
+        .map { case (category, (_, currentMonthSpending)) => (category, currentMonthSpending) }
 
-    if (paymentsByCategory.nonEmpty) alertSender.alert(user, paymentsByCategory)
+    // TODO
+    println("\n\n >> HERE: " + spendingByCategory.toString() + "\n")
+    // TODO
+
+    if (spendingByCategory.nonEmpty) alertSender.alert(user, spendingByCategory)
   }
 }

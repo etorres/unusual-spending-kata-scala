@@ -9,17 +9,27 @@ object UnusualSpendingMonitorSpec
     with DataGeneratorsSpec {
   import Prop.forAll
 
-  property("triggerAlertOnUnusuallyHighSpending") = forAll(paymentsGen) { payments =>
+  property("triggerAlertOnUnusuallyHighSpending") = forAll(wastefulPaymentsGen) { payments =>
+    triggeredAlertFor(wastefulUser, payments).nonEmpty
+  }
+
+  property("dontTriggerAlertOnNormalSpending") = forAll(sparingPaymentsGen) { payments =>
+    triggeredAlertFor(sparingUser, payments).isEmpty
+  }
+
+  def triggeredAlertFor(user: User, payments: Seq[Payment]): Option[Alert] = {
+    val alertSender = new SilentAlertSender()
+
     val unusualSpendingMonitor =
       new UnusualSpendingMonitor(
         new FixedCalendar(march16th2020),
         new InMemoryPaymentsFetcher(payments),
-        new MemoryAlertSender()
+        alertSender
       )
 
-    unusualSpendingMonitor.triggerAlertFor(user1)
+    unusualSpendingMonitor.triggerAlertFor(user)
 
-    true // TODO
+    alertSender.alert
   }
 
   final class FixedCalendar(fixedDate: LocalDate) extends Calendar {
@@ -34,8 +44,8 @@ object UnusualSpendingMonitorSpec
     ): Seq[Payment] = payments
   }
 
-  final class MemoryAlertSender extends AlertSender {
-    private[this] var alert: Option[Alert] = None
+  final class SilentAlertSender extends AlertSender {
+    var alert: Option[Alert] = None
 
     override def alert(user: User, spending: Map[Category, Double]): Unit =
       alert = Some(formattedAlertFrom(spending))

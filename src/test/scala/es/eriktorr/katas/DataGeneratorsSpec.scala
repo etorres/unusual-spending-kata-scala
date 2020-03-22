@@ -9,22 +9,32 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 trait DataGeneratorsSpec {
-  val user1: User = User("user_1")
+  val sparingUser: User = User("sparing_user")
+  val wastefulUser: User = User("wasteful_user")
 
   val march16th2020: LocalDate = LocalDate.of(2020, 8, 16)
+  val firstDayOfThePeriod: LocalDate = march16th2020.minusMonths(1L)
 
   val dateGen: Gen[LocalDate] = {
-    val rangeStart = march16th2020.minusMonths(1L).toEpochDay
+    val rangeStart = march16th2020.minusMonths(2L).toEpochDay
     val rangeEnd = march16th2020.toEpochDay
     Gen
       .choose(rangeStart, rangeEnd)
       .map(i => LocalDate.ofEpochDay(i))
   }
 
-  val paymentGen: Gen[Payment] =
+  val priceGen: (User, LocalDate) => Gen[Double] = (user, date) =>
+    user match {
+      case x if x == sparingUser =>
+        if (date.isBefore(firstDayOfThePeriod)) Gen.choose(501.0, 1000.0)
+        else Gen.choose(1.0, 500.0)
+      case _ => Gen.choose(1.0, 1000.0)
+    }
+
+  val paymentGen: User => Gen[Payment] = user =>
     for {
       date <- dateGen
-      price <- Gen.choose(1.0, 1000.0)
+      price <- priceGen(user, date)
       description <- Gen.asciiPrintableStr
       category <- Gen.oneOf(Entertainment, Restaurants, Golf, Groceries, Travel)
     } yield Payment(date = date, price = price, description = description, category = category)
@@ -34,7 +44,11 @@ trait DataGeneratorsSpec {
       override def builder: mutable.Builder[T, ArrayBuffer[T]] = ArrayBuffer.newBuilder[T]
     }
 
-  val paymentsGen: Gen[Seq[Payment]] = for {
-    payments <- Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGen)
-  } yield payments.toSeq
+  val paymentsGen: Gen[Payment] => Gen[Seq[Payment]] = paymentGenerator =>
+    for {
+      payments <- Gen.containerOf[mutable.ArrayBuffer, Payment](paymentGenerator)
+    } yield payments.toSeq
+
+  val sparingPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(sparingUser))
+  val wastefulPaymentsGen: Gen[Seq[Payment]] = paymentsGen(paymentGen(wastefulUser))
 }
